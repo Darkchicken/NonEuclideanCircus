@@ -171,7 +171,7 @@ FVector APortalActor::ConvertLocationToActorSpace(FVector Location, AActor* Refe
     Dots.Y = FVector::DotProduct(Direction, Reference->GetActorRightVector());
     Dots.Z = FVector::DotProduct(Direction, Reference->GetActorUpVector());
 
-    FVector NewDirection = Dots.X * Target->GetActorForwardVector()
+    FVector NewDirection = Dots.X * TargetActor->GetActorForwardVector()
         + Dots.Y * TargetActor->GetActorRightVector()
         + Dots.Z * TargetActor->GetActorUpVector();
 

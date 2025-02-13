@@ -51,11 +51,11 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Portal")
     void TeleportActor(AActor* ActorToTeleport);
 
-    FVector ConvertLocationToActorSpace(FVector Location, AActor* Reference, AActor* TargetActor);
+    static FVector ConvertLocationToActorSpace(FVector Location, AActor* Reference, AActor* TargetActor);
     FRotator ConvertRotationToActorSpace(FRotator Rotation, AActor* Reference, AActor* TargetActor);
 
 protected:
-    UPROPERTY(BlueprintReadOnly)
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
     USceneComponent* PortalRootComponent;
 
 private:
