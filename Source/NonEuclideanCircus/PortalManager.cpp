@@ -68,6 +68,11 @@ void APortalManager::Init()
     CaptureSettings.bOverride_ScreenPercentage_DEPRECATED = true;
     CaptureSettings.ScreenPercentage_DEPRECATED = 100.0f;
 
+    CaptureSettings.bOverride_DynamicGlobalIlluminationMethod = true;
+    CaptureSettings.DynamicGlobalIlluminationMethod = EDynamicGlobalIlluminationMethod::Lumen;
+    CaptureSettings.LumenSurfaceCacheResolution = 1.f;
+    CaptureSettings.ReflectionMethod = EReflectionMethod::Lumen;
+
     SceneCapture->PostProcessSettings = CaptureSettings;
 
     //------------------------------------------------
