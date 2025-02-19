@@ -315,10 +315,10 @@ FVector APortalActor::UpdateLocation(FVector OldLocation)
     }
 
     FTransform PortalTransform = GetActorTransform();
-    FVector ActorLocation = PortalTransform.GetLocation();
-    ActorLocation.X *= -1.f;
-    ActorLocation.Y *= -1.f;
-    FTransform UpdatedTransform = UKismetMathLibrary::MakeTransform(ActorLocation, PortalTransform.GetRotation().Rotator(), PortalTransform.GetScale3D());
+    FVector ActorScale = PortalTransform.GetScale3D();
+    ActorScale.X *= -1.f;
+    ActorScale.Y *= -1.f;
+    FTransform UpdatedTransform = UKismetMathLibrary::MakeTransform(PortalTransform.GetLocation(), PortalTransform.GetRotation().Rotator(), ActorScale);
     FVector UpdatedLocation = UKismetMathLibrary::InverseTransformLocation(UpdatedTransform, OldLocation);
     return UKismetMathLibrary::TransformLocation(LinkedPortal->GetActorTransform(), UpdatedLocation);  
 }
