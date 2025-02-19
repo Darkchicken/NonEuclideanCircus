@@ -86,7 +86,7 @@ public:
    float OffsetTriggerDistance = 200.f;
 
    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-   float SmoothOrientationTimeMax = 0.25f;
+   float SmoothOrientationTime = 0.25f;
 
    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
    int32 MaxRecursionDepth = 3;

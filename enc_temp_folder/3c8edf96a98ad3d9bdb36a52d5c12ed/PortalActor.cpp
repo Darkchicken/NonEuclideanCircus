@@ -425,14 +425,14 @@ void APortalActor::SmoothPlayerOrientation(float DeltaTime)
     }
 
     SmoothOrientationTimer += DeltaTime;
-    if (SmoothOrientationTimer >= SmoothOrientationTimeMax)
+    if (SmoothOrientationTimer >= SmoothOrientationTime)
     {
-        SmoothOrientationTimer = SmoothOrientationTimeMax;
+        SmoothOrientationTimer = SmoothOrientationTime;
         bSmoothOrientationAfterTeleport = false;
     }
 
-    FRotator SmoothedControlRotation = FMath::InterpEaseInOut<FRotator>(InitialControlRotation, FRotator(InitialControlRotation.Pitch, InitialControlRotation.Yaw, 0.f), SmoothOrientationTimer / SmoothOrientationTimeMax, 2.f);
-    FRotator SmoothedPlayerRotation = FMath::InterpEaseInOut<FRotator>(InitialPlayerRotation, FRotator::ZeroRotator, SmoothOrientationTimer / SmoothOrientationTimeMax, 2.f);
+    FRotator SmoothedControlRotation = FMath::InterpEaseInOut<FRotator>(InitialControlRotation, FRotator(InitialControlRotation.Pitch, InitialControlRotation.Yaw, 0.f), SmoothOrientationTimer / SmoothOrientationTime, 2.f);
+    FRotator SmoothedPlayerRotation = FMath::InterpEaseInOut<FRotator>(InitialPlayerRotation, FRotator::ZeroRotator, SmoothOrientationTimer / SmoothOrientationTime, 2.f);
 
     PlayerController->SetControlRotation(SmoothedControlRotation);
     PlayerCharacter->SetActorRotation(SmoothedPlayerRotation);
