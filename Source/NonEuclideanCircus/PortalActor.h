@@ -34,7 +34,10 @@ public:
    //Update viewport size if it has been changed
    void UpdateViewportSize();
 
-   void ShouldTeleport();
+   //Update offset distance based on player's location and velocity
+   void UpdateOffsetDistance(FVector Point, FVector PortalLocation, FVector PortalNormal, float DeltaTime);
+
+   void ShouldTeleport(float DeltaTime);
 
    bool IsPointCrossingPortal(FVector Point, FVector PortalLocation, FVector PortalNormal);
 
@@ -72,6 +75,13 @@ public:
 
    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
    float DefaultOffsetAmount = -4.f;
+
+   UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+   float OffsetMultiplier = -4.f;
+
+   //Plane material offset will only occur if player is closer than OffsetTriggerDistance to the portal
+   UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+   float OffsetTriggerDistance = 200.f;
 
    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
    int32 MaxRecursionDepth = 3;

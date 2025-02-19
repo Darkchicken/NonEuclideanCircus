@@ -79,7 +79,7 @@ void APortalActor::Tick(float DeltaTime)
 
     UpdateViewportSize();
 
-    ShouldTeleport();
+    ShouldTeleport(DeltaTime);
 }
 
 void APortalActor::Init()
@@ -203,15 +203,41 @@ void APortalActor::UpdateViewportSize()
     }
 }
 
-void APortalActor::ShouldTeleport()
+void APortalActor::UpdateOffsetDistance(FVector Point, FVector PortalLocation, FVector PortalNormal, float DeltaTime)
 {
-    TSet<AActor*> OverlappingPlayers;
-    PlayerDetection->GetOverlappingActors(OverlappingPlayers, PlayerCharacterClass);
-    if (OverlappingPlayers.IsEmpty())
+    ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
+    if (PlayerCharacter == nullptr)
     {
         return;
     }
 
+    //bool bIsInFront = FVector::DotProduct(PortalNormal, Point - PortalLocation) >= 0.f;
+    if (bWasInFront)
+    {
+        if (UPawnMovementComponent* PlayerMovement = PlayerCharacter->GetMovementComponent())
+        {
+            //Amount of velocity in direction of portal
+            float VelocityTowardsPortal = FVector::DotProduct(PortalNormal * -1.f, PlayerMovement->Velocity);
+            float DistanceTravelledThisTick = VelocityTowardsPortal * DeltaTime;
+            if (VelocityTowardsPortal > 0.f && FVector::Distance(PlayerCharacter->GetActorLocation(), GetActorLocation()) < OffsetTriggerDistance)
+            {  
+                float OffsetAmount = OffsetMultiplier * DistanceTravelledThisTick;
+                
+                //Adjust this value if the player is near the portal and moving quickly toward it
+                FVector OffsetDistance = ForwardDirection->GetForwardVector() * OffsetAmount;
+
+                DynamicPortalMat->SetVectorParameterValue("OffsetDistance", UKismetMathLibrary::MakeColor(OffsetDistance.X, OffsetDistance.Y, OffsetDistance.Z, 1.f));
+                return;
+            }
+        }
+    }
+
+    FVector OffsetDistance = ForwardDirection->GetForwardVector() * DefaultOffsetAmount;
+    DynamicPortalMat->SetVectorParameterValue("OffsetDistance", UKismetMathLibrary::MakeColor(OffsetDistance.X, OffsetDistance.Y, OffsetDistance.Z, 1.f));
+}
+
+void APortalActor::ShouldTeleport(float DeltaTime)
+{
     //A player was detected in the bounds, handle teleport checks
     ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
     if (PlayerCharacter == nullptr)
@@ -226,6 +252,15 @@ void APortalActor::ShouldTeleport()
         return;
     }
 
+    UpdateOffsetDistance(PlayerCamera->GetComponentLocation(), GetActorLocation(), ForwardDirection->GetForwardVector(), DeltaTime);
+
+    TSet<AActor*> OverlappingPlayers;
+    PlayerDetection->GetOverlappingActors(OverlappingPlayers, PlayerCharacterClass);
+    if (OverlappingPlayers.IsEmpty())
+    {
+        return;
+    }
+
     if (IsPointCrossingPortal(PlayerCamera->GetComponentLocation(), GetActorLocation(), ForwardDirection->GetForwardVector()))
     {
         TeleportCharacter();
@@ -234,7 +269,20 @@ void APortalActor::ShouldTeleport()
 
 bool APortalActor::IsPointCrossingPortal(FVector Point, FVector PortalLocation, FVector PortalNormal)
 {
+    ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
+    if (PlayerCharacter == nullptr)
+    {
+        return false;
+    }
+
+    FVector MovementDirection = FVector::ZeroVector;
+    if (UPawnMovementComponent* PlayerMovement = PlayerCharacter->GetMovementComponent())
+    {
+        MovementDirection = PlayerMovement->Velocity.GetSafeNormal();
+    }
+
     bool bIsInFront = FVector::DotProduct(PortalNormal, Point - PortalLocation) >= 0.f;
+    bool bMovingTowardPortal = FVector::DotProduct(PortalNormal, MovementDirection) < 0.f;
     
     FPlane MathPortalPlane = UKismetMathLibrary::MakePlaneFromPointAndNormal(PortalLocation, PortalNormal);
 
@@ -242,7 +290,8 @@ bool APortalActor::IsPointCrossingPortal(FVector Point, FVector PortalLocation, 
     FVector Intersection;
     bool bIsIntersect = UKismetMathLibrary::LinePlaneIntersection(LastPosition, Point, MathPortalPlane, T, Intersection);
 
-    bool IsCrossingPortal = bIsIntersect && !bIsInFront && bWasInFront;
+    bool IsCrossingPortal = bIsIntersect && !bIsInFront && bWasInFront && bMovingTowardPortal;
+   
     bWasInFront = bIsInFront;
     LastPosition = Point;
 
@@ -303,7 +352,7 @@ void APortalActor::TeleportCharacter()
 FVector APortalActor::UpdateVelocity(FVector OldVelocity)
 {
     FVector NewVelocity = OldVelocity.GetSafeNormal();
-    UpdateRotationAxis(NewVelocity);
+    NewVelocity = UpdateRotationAxis(NewVelocity);
     return (NewVelocity * OldVelocity.Length());
 }
 
