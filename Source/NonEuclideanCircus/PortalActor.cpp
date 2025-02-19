@@ -344,8 +344,10 @@ void APortalActor::TeleportCharacter()
     if (UKismetMathLibrary::Round(UpdatedControlRotation.Roll) != 0.f || UKismetMathLibrary::Round(PlayerCharacter->GetActorRotation().Roll) != 0.f)
     {
         SmoothOrientationTimer = 0.f;
-        InitialControlRotation = UpdatedControlRotation;
-        InitialPlayerRotation = PlayerCharacter->GetActorRotation();
+        InitialControlRotation = UpdatedControlRotation.Quaternion();
+        InitialPlayerRotation = PlayerCharacter->GetActorRotation().Quaternion();
+        FinalControlRotation = FRotator(UpdatedControlRotation.Pitch, UpdatedControlRotation.Yaw, 0.f).Quaternion();
+        FinalPlayerRotation = FRotator::ZeroRotator.Quaternion();
         bSmoothOrientationAfterTeleport = true;
        
     }
@@ -431,9 +433,9 @@ void APortalActor::SmoothPlayerOrientation(float DeltaTime)
         bSmoothOrientationAfterTeleport = false;
     }
 
-    FRotator SmoothedControlRotation = FMath::InterpEaseInOut<FRotator>(InitialControlRotation, FRotator(InitialControlRotation.Pitch, InitialControlRotation.Yaw, 0.f), SmoothOrientationTimer / SmoothOrientationTimeMax, 2.f);
-    FRotator SmoothedPlayerRotation = FMath::InterpEaseInOut<FRotator>(InitialPlayerRotation, FRotator::ZeroRotator, SmoothOrientationTimer / SmoothOrientationTimeMax, 2.f);
+    FQuat SmoothedControlRotation = FMath::InterpEaseInOut<FQuat>(InitialControlRotation, FinalControlRotation, SmoothOrientationTimer / SmoothOrientationTimeMax, 2.f);
+    FQuat SmoothedPlayerRotation = FMath::InterpEaseInOut<FQuat>(InitialPlayerRotation, FinalPlayerRotation, SmoothOrientationTimer / SmoothOrientationTimeMax, 2.f);
 
-    PlayerController->SetControlRotation(SmoothedControlRotation);
-    PlayerCharacter->SetActorRotation(SmoothedPlayerRotation);
+    PlayerController->SetControlRotation(SmoothedControlRotation.Rotator());
+    PlayerCharacter->SetActorRotation(SmoothedPlayerRotation.Rotator());
 }

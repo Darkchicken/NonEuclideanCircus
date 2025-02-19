@@ -102,8 +102,10 @@ protected:
     int32 CurrentRecursionDepth = 0;
 
     bool bSmoothOrientationAfterTeleport = false;
-    FRotator InitialControlRotation;
-    FRotator InitialPlayerRotation;
+    FQuat InitialControlRotation;
+    FQuat InitialPlayerRotation;
+    FQuat FinalControlRotation;
+    FQuat FinalPlayerRotation;
 
     float SmoothOrientationTimer = 0.f;
 };
