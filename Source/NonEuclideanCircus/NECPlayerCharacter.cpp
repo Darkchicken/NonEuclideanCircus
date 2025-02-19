@@ -36,10 +36,7 @@ void ANECPlayerCharacter::TickActor(float DeltaSeconds, ELevelTick TickType, FAc
 {
 	Super::TickActor(DeltaSeconds, TickType, ThisTickFunction);
 
-	if (ANECPlayerController* PC = Cast<ANECPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
-	{
-		PC->UpdatePortalManager(DeltaSeconds);
-	}
+	
 }
 
 // Called to bind functionality to input

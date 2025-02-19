@@ -16,9 +16,5 @@ class NONEUCLIDEANCIRCUS_API ANECPlayerController : public APlayerController
 public:
 	virtual void BeginPlay() override;
 
-	void UpdatePortalManager(float DeltaTime);
-
-	UPROPERTY(BlueprintReadWrite)
-	class APortalManager* PortalManager = nullptr;
 	
 };
