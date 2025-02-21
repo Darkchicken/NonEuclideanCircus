@@ -165,8 +165,10 @@ void APortalActor::UpdateSceneCaptureRecursive(FVector Location, FRotator Rotati
 
         FVector TemporaryLocation = UpdateLocation(CameraManager->GetTransformComponent()->GetComponentLocation());
         FRotator TemporaryRotation = UpdateRotation(CameraManager->GetTransformComponent()->GetComponentRotation());
+        
         ++CurrentRecursionDepth;
         UpdateSceneCaptureRecursive(TemporaryLocation, TemporaryRotation);
+
         LinkedPortal->PortalCamera->SetWorldLocationAndRotation(TemporaryLocation, TemporaryRotation);
         LinkedPortal->PortalCamera->CaptureScene();
         CurrentRecursionDepth = 0;
@@ -390,10 +392,26 @@ FVector APortalActor::UpdateLocation(FVector OldLocation)
 }
 
 FRotator APortalActor::UpdateRotation(FRotator OldRotation)
-{
-    FVector X, Y, Z;
-    UKismetMathLibrary::BreakRotIntoAxes(OldRotation, X, Y, Z);
-    return UKismetMathLibrary::MakeRotationFromAxes(UpdateRotationAxis(X), UpdateRotationAxis(Y), UpdateRotationAxis(Z));
+{   
+    if (LinkedPortal == nullptr)
+    {
+        return OldRotation;
+    }
+
+    //Get rotation to modify as a quaternion
+    FQuat OldRotationQuat = FQuat(OldRotation);
+    
+
+    //Convert rotation from world space to local space of entrance portal
+    FTransform SourceActorTransform = GetActorTransform();
+    FQuat LocalQuat = SourceActorTransform.GetRotation().Inverse() * OldRotationQuat;
+    //Modify to find equivalent rotation relative to exit portal
+    LocalQuat = ModificationRotation * LocalQuat;
+    //Convert rotation fromm local space to world space relative to exit portal
+    FTransform LinkedPortalTransform = LinkedPortal->GetActorTransform();
+    FQuat NewWorldQuat = LinkedPortalTransform.GetRotation() * LocalQuat;
+
+    return NewWorldQuat.Rotator();
 }
 
 FVector APortalActor::UpdateRotationAxis(FVector RotationAxis)
@@ -404,11 +422,14 @@ FVector APortalActor::UpdateRotationAxis(FVector RotationAxis)
     }
 
     FTransform ActorTransform = GetActorTransform();
+    //Transform direction from world space to local space of entrance portal
     FVector UpdatedDirection = UKismetMathLibrary::InverseTransformDirection(ActorTransform, RotationAxis);
+    // Given a direction vector and a surface normal, returns the vector reflected across the surface normal.
+    //Produces a result like shining a laser at a mirror.
     UpdatedDirection = UKismetMathLibrary::MirrorVectorByNormal(UpdatedDirection, FVector(1.f, 0.f, 0.f));
     UpdatedDirection = UKismetMathLibrary::MirrorVectorByNormal(UpdatedDirection, FVector(0.f, 1.f, 0.f));
+    //Transfrom new direction from local space of entrance portal to world space of exit portal
     FTransform LinkedPortalTransform = LinkedPortal->GetActorTransform();
-
     return UKismetMathLibrary::TransformDirection(LinkedPortalTransform, UpdatedDirection);
 }
 

@@ -108,4 +108,6 @@ protected:
     FQuat FinalPlayerRotation;
 
     float SmoothOrientationTimer = 0.f;
+
+    const FQuat ModificationRotation = FQuat(FRotator(0.f, 180.f, 0.f));
 };
